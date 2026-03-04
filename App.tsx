@@ -51,6 +51,9 @@ const App: React.FC = () => {
     };
   }, [income, deductions]);
 
+  const [manualScheduleRegime, setManualScheduleRegime] = useState<TaxRegime | null>(null);
+  const activeScheduleRegime = manualScheduleRegime || results.bestRegime;
+
   const updateIncome = (key: keyof IncomeData, val: number) => {
     setIncome(prev => ({ ...prev, [key]: val }));
   };
@@ -249,18 +252,34 @@ const App: React.FC = () => {
 
           {/* ADVANCE TAX SCHEDULE */}
           <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                   <TrendingUp className="text-emerald-600" />
-                  Advance Tax Schedule (Best Regime)
+                  Advance Tax Schedule
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">Quarterly installments for FY 2025-26</p>
               </div>
-              <div className="hidden md:block text-right">
+
+              <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <button 
+                  onClick={() => setManualScheduleRegime(TaxRegime.NEW)}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${activeScheduleRegime === TaxRegime.NEW ? 'bg-white shadow-sm text-emerald-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 border border-transparent'}`}
+                >
+                  New Regime
+                </button>
+                <button 
+                  onClick={() => setManualScheduleRegime(TaxRegime.OLD)}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${activeScheduleRegime === TaxRegime.OLD ? 'bg-white shadow-sm text-emerald-600 border border-slate-200' : 'text-slate-500 hover:text-slate-700 border border-transparent'}`}
+                >
+                  Old Regime
+                </button>
+              </div>
+
+              <div className="hidden xl:block text-right">
                 <div className="text-xs text-slate-400 font-bold uppercase">Net Payable After TDS</div>
                 <div className="text-xl font-bold text-slate-900">
-                  ₹{results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].netPayableAfterTDS.toLocaleString('en-IN')}
+                  ₹{results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].netPayableAfterTDS.toLocaleString('en-IN')}
                 </div>
               </div>
             </div>
@@ -270,33 +289,33 @@ const App: React.FC = () => {
                 title="Q1 Installment" 
                 date="June 15, 2025" 
                 percentage="15%" 
-                amount={results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.june}
+                amount={results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.june}
                 cumulative={false}
               />
               <QuarterlyCard 
                 title="Q2 Installment" 
                 date="Sept 15, 2025" 
                 percentage="45%" 
-                amount={results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.september}
+                amount={results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.september}
                 cumulative={true}
               />
               <QuarterlyCard 
                 title="Q3 Installment" 
                 date="Dec 15, 2025" 
                 percentage="75%" 
-                amount={results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.december}
+                amount={results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.december}
                 cumulative={true}
               />
               <QuarterlyCard 
                 title="Q4 Installment" 
                 date="Mar 15, 2026" 
                 percentage="100%" 
-                amount={results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.march}
+                amount={results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].quarterlyPayments.march}
                 cumulative={true}
               />
             </div>
 
-            {results[results.bestRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].netPayableAfterTDS < 10000 && (
+            {results[activeScheduleRegime === TaxRegime.NEW ? 'newRegime' : 'oldRegime'].netPayableAfterTDS < 10000 && (
               <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
                 <Info className="text-amber-600 w-5 h-5 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
