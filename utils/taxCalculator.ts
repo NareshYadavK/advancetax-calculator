@@ -32,17 +32,16 @@ export const calculateTax = (
       deductions.hra + 
       deductions.otherDeductions;
   } else {
-    // New Tax Regime FY 2025-26 updates
-    // Assume Budget 2024/25 structure remains: Standard deduction 75k for salaried
+    // New Tax Regime FY 2025-26 (Budget 2024)
     standardDeduction = income.salary > 0 ? 75000 : 0;
-    totalDeductions = standardDeduction; // Most deductions not allowed in New Regime
+    totalDeductions = standardDeduction; 
   }
 
   const taxableIncome = Math.max(0, grossTotalIncome - totalDeductions);
   let basicTax = 0;
 
   if (regime === TaxRegime.NEW) {
-    // New Regime Slabs (FY 2025-26 - Estimate based on Budget 2024 updates)
+    // New Regime Slabs FY 2025-26
     // 0 - 3L: Nil
     // 3 - 7L: 5%
     // 7 - 10L: 10%
@@ -56,9 +55,16 @@ export const calculateTax = (
     else if (taxableIncome <= 1500000) basicTax = 80000 + (taxableIncome - 1200000) * 0.20;
     else basicTax = 140000 + (taxableIncome - 1500000) * 0.30;
 
-    // Rebate u/s 87A for New Regime: Up to 7L income (Tax nil)
-    // Note: Technically for FY 24-25 it's 7L, we assume same for 25-26
-    if (taxableIncome <= 700000) basicTax = 0;
+    // Rebate u/s 87A and Marginal Relief for New Regime
+    if (taxableIncome <= 700000) {
+      basicTax = 0;
+    } else {
+      // Marginal Relief: Tax cannot exceed income over 7L
+      const excessIncome = taxableIncome - 700000;
+      if (basicTax > excessIncome) {
+        basicTax = excessIncome;
+      }
+    }
   } else {
     // Old Regime Slabs
     // 0 - 2.5L: Nil
